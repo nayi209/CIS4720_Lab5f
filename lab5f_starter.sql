@@ -186,8 +186,17 @@ SELECT * FROM attendance;
 -- Then CALL it.
 -- =================================================================
 
--- your comment goes here
--- your statements go here
+-- This procedure lists all students with their ID, first name, last name, and GPA.
+-- a saved job that lists every student
+CREATE PROCEDURE list_students()
+BEGIN
+-- the statement the procedure runs each time it is called
+SELECT student_id, first_name, last_name, gpa
+FROM students;
+END
+
+--call the procedure to see what it does
+CALL list_students();
 
 
 -- =================================================================
@@ -197,16 +206,23 @@ SELECT * FROM attendance;
 -- that goes in the gap.
 -- =================================================================
 
--- your comment goes here
--- your statements go here
-
+-- shows every test score for the one student you ask about
+CREATE PROCEDURE student_report(IN p_student_id INT)
+BEGIN
+-- choose the three columns from the view, for one student only
+    SELECT student_name, test_name, score
+    FROM student_scores
+    WHERE student_id = p_student_id;
+END
 
 -- =================================================================
 -- STEP 5. Call student_report three times
 -- =================================================================
 
--- your comment goes here
--- your statements go here
+-- calling the student_report procedure for three different student IDs to display their test scores
+CALL student_report(3);
+CALL student_report(5);
+CALL student_report(9);
 
 
 -- =================================================================
@@ -215,36 +231,65 @@ SELECT * FROM attendance;
 -- Note the 1304 error, then write the DROP and the new CREATE.
 -- =================================================================
 
--- your comment goes here
--- your statements go here
+-- dropping the existing list_students procedure to redefine it with ordering by GPA in descending order
+DROP PROCEDURE IF EXISTS list_students;
 
+--create list_students again with rows sorted by gpa in descending order
+CREATE PROCEDURE list_students()
+BEGIN
+    SELECT student_id, first_name, last_name, gpa
+    FROM students
+    ORDER BY gpa DESC;
+END;
 
+--call the list_students
+CALL list_students();
 -- =================================================================
 -- STEP 7. Write scores_for_test completely on your own
 -- =================================================================
 
--- your comment goes here
--- your statements go here
+-- This procedure lists all students and
+-- their scores for a specific test, ordered by score in descending order.
+CREATE PROCEDURE scores_for_test(IN p_test_name VARCHAR(20))
+BEGIN
+    SELECT s.student_id, CONCAT(s.first_name, ' ', s.last_name) AS student_name, t.score
+    FROM students s
+    LEFT JOIN test_scores t ON s.student_id = t.student_id
+    WHERE t.test_name = p_test_name
+    ORDER BY t.score DESC;
+END;
 
-
+--call for quiz2, quiz3 and quiz9
+CALL scores_for_test('quiz2');
+CALL scores_for_test('quiz3');
+CALL scores_for_test('quiz9');
 -- =================================================================
 -- STEP 8. Three deliberate mistakes
 --
 -- Put each error number and message in a comment.
 -- =================================================================
 
--- your comment goes here
--- your statements go here
-
+--deliberate mistakes to demonstrate error handling
+-- a procedure used like a function
+SELECT student_report(1);
+-- a function used like a procedure
+CALL calculate_gpa(1);
+-- a procedure called without the value it needs
+CALL student_report();
 
 -- =================================================================
 -- STEP 9. See what you have built
 -- =================================================================
 
--- your comment goes here
--- your statements go here
+-- everything created in this schema, including the procedures and functions
+--every function and procedure in this schema
+SELECT routine_name, routine_type
+FROM information_schema.routines
+WHERE routine_schema = 'cis_students_db'
+ORDER BY routine_name;
 
-
+--show full definition of every procedure and function in this schema
+SHOW CREATE PROCEDURE scores_for_test;
 -- =================================================================
 -- STEP 10 and 11. Push to GitHub and submit the URL
 --
